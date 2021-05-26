@@ -18,7 +18,9 @@ object ArticlesHandler{
     fun save(request: ServerRequest): ServerResponse =
         request.body(Article::class.java)
             .let { article -> articleRepository.save(article)}
-            .let { article -> ServerResponse.created(URI("")).body(article)}
+            .let { article ->
+                val uri = "${request.uri()}/${article.id}"
+                ServerResponse.created(URI(uri)).body(article)}
 
     fun delete(request: ServerRequest): ServerResponse =
         request.inPath("id")

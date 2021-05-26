@@ -3,6 +3,7 @@ package com.cgm.experiments.blogapplicationdsl
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.*
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.http.MediaType
@@ -90,22 +91,28 @@ class BlogApplicationDslApplicationTests {
     fun `can create a new article`() {
         val newArticle = Article(0, "article a", "body of article a")
 
-        val articleStr = client.post("/api/articles"){
+        client.post("/api/articles"){
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(newArticle)
         }
         .andExpect {
             status { isCreated() }
-        }.andReturn().response.contentAsString
+        }.andReturn()
+            .let { result ->
+                val actualArticle = mapper.readValue<Article>(result.response.contentAsString)
 
-        val actualArticle = mapper.readValue<Article>(articleStr)
+                val location = result.response.getHeaderValue("location") as String
 
-        client.get("/api/articles/${actualArticle.id}")
-            .andExpect {
-                status { isOk() }
-                content { json(mapper.writeValueAsString(actualArticle)) }
+                location shouldBe "http://localhost/api/articles/${actualArticle.id}"
+
+                client.get(location)
+                    .andExpect {
+                        status { isOk() }
+                        content { json(mapper.writeValueAsString(actualArticle)) }
+                    }
             }
+
 
     }
 
