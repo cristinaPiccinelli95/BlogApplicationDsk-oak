@@ -20,10 +20,14 @@ object ArticlesHandler{
             .let { article -> articleRepository.save(article)}
             .let { article -> ServerResponse.created(URI("")).body(article)}
 
-    fun delete(request: ServerRequest): ServerResponse  =
+    fun delete(request: ServerRequest): ServerResponse =
         request.inPath("id")
             ?.run(::findOneToDelete)
             ?: okResponse(articleRepository.deleteAll())
+
+    fun modify(request: ServerRequest): ServerResponse  =
+        findOneToModify(request.pathVariable("id"), request.body(Article::class.java))
+
 
     private fun findOne(id: String) =
         validateIntId(id)
@@ -35,6 +39,11 @@ object ArticlesHandler{
             ?.let { intId -> deleteOneOrNotFound(intId) }
             ?: ServerResponse.badRequest().build()
 
+    private fun findOneToModify(id: String, article: Article) =
+        validateIntId(id)
+            ?.let { intId -> modifyOneOrNotFound(intId, article)}
+            ?: ServerResponse.badRequest().build()
+
     private fun validateIntId(id: String) = id.toIntOrNull()
 
     private fun getOneOrNotFound(intId: Int) =
@@ -44,6 +53,11 @@ object ArticlesHandler{
 
     private fun deleteOneOrNotFound(intId: Int) =
         articleRepository.deleteOne(intId)
+            ?.run(::okResponse)
+            ?: ServerResponse.notFound().build()
+
+    private fun modifyOneOrNotFound(intId: Int, article: Article) =
+        articleRepository.modify(intId, article)
             ?.run(::okResponse)
             ?: ServerResponse.notFound().build()
 

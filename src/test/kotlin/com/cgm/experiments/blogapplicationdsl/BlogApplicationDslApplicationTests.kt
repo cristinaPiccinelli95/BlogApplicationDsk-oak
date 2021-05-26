@@ -6,10 +6,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import org.junit.jupiter.api.*
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.http.MediaType
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.delete
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.*
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
 
@@ -20,9 +17,10 @@ class BlogApplicationDslApplicationTests {
     private lateinit var client: MockMvc
     private val mapper = jacksonObjectMapper()
 
-    private val expectedArticles = listOf(
+    private val expected = listOf(
         Article(1,"article x", "body article x"),
-        Article(2,"article y", "body article y"))
+        Article(2,"article y", "body article y"),
+        Article(3,"article z", "body article z"))
 
     @BeforeAll
     internal fun setUp() {
@@ -40,7 +38,7 @@ class BlogApplicationDslApplicationTests {
     @BeforeEach
     internal fun before(){
         client.delete("/api/articles")
-        expectedArticles.forEach {
+        expected.forEach {
             client.post("/api/articles"){
                 contentType = MediaType.APPLICATION_JSON
                 accept = MediaType.APPLICATION_JSON
@@ -55,14 +53,14 @@ class BlogApplicationDslApplicationTests {
             .andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
-                content { json(mapper.writeValueAsString(expectedArticles)) }
+                content { json(mapper.writeValueAsString(expected)) }
             }
     }
 
     @Test
     fun `can read one article`() {
         val id = 2
-        val expectedArticle = expectedArticles.first { it.id == id }
+        val expectedArticle = expected.first { it.id == id }
 
         client.get("/api/articles/$id")
             .andExpect {
@@ -90,7 +88,7 @@ class BlogApplicationDslApplicationTests {
 
     @Test
     fun `can create a new article`() {
-        val newArticle = Article(0, "article z", "body of article z")
+        val newArticle = Article(0, "article a", "body of article a")
 
         val articleStr = client.post("/api/articles"){
             contentType = MediaType.APPLICATION_JSON
@@ -125,8 +123,9 @@ class BlogApplicationDslApplicationTests {
 
     @Test
     fun `can delete one article`() {
-        val id = 1
-        val expectedArticle = listOf(expectedArticles[1])
+        val id = 2
+        val expectedArticle = expected.map { it.copy() }.toMutableList()
+        expectedArticle.removeIf { it.id == id }
 
         client.delete("/api/articles/$id")
             .andExpect {
@@ -147,6 +146,56 @@ class BlogApplicationDslApplicationTests {
     @Test
     fun `if the article id to delete is not a number it returns bad request`() {
         client.delete("/api/articles/badRequestId")
+            .andExpect {
+                status { isBadRequest() }
+            }
+    }
+
+    @Test
+    fun `can modify one article`() {
+        val id = 3
+        val expectedArticle = expected.map { it.copy() }.toMutableList()
+        val modifiedArticle = expected.find { it.id == id }?.copy(body = "modify body z")!!
+        expectedArticle[2] = modifiedArticle
+
+        client.put("/api/articles/$id"){
+            contentType = MediaType.APPLICATION_JSON
+            accept = MediaType.APPLICATION_JSON
+            content = mapper.writeValueAsString(modifiedArticle)
+        }
+            .andExpect {
+                status { isOk() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content { json(mapper.writeValueAsString(expectedArticle)) }
+            }
+    }
+
+    @Test
+    fun `if the article to modify do not exist return not found`() {
+        val id = 9999999
+        val modifiedArticle = Article(id, "modified title", "modified body")
+
+        client.put("/api/articles/$id")
+        {
+            contentType = MediaType.APPLICATION_JSON
+            accept = MediaType.APPLICATION_JSON
+            content = mapper.writeValueAsString(modifiedArticle)
+        }
+            .andExpect {
+                status { isNotFound() }
+            }
+    }
+
+    @Test
+    fun `if the article id to modify is not a number it returns bad request`() {
+        val modifiedArticle = Article(0, "modified title", "modified body")
+
+        client.put("/api/articles/badRequestId")
+        {
+            contentType = MediaType.APPLICATION_JSON
+            accept = MediaType.APPLICATION_JSON
+            content = mapper.writeValueAsString(modifiedArticle)
+        }
             .andExpect {
                 status { isBadRequest() }
             }

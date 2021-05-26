@@ -5,7 +5,8 @@ import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 class ArticleRepository(){
     private val articles = mutableListOf(
         Article(1, "article x", "body article x"),
-        Article(2, "article y", "body article y")
+        Article(2, "article y", "body article y"),
+        Article(3,"article z", "body article z")
     )
 
     fun getAll(): List<Article> = articles
@@ -25,9 +26,17 @@ class ArticleRepository(){
     }
 
     fun deleteOne(id: Int): MutableList<Article>? =
-        articles.firstOrNull { it.id == id }
+        getOne(id)
             ?.let {
                 articles.remove(it)
+                articles
+            }
+
+    fun modify(id: Int, article: Article): MutableList<Article>? =
+        getOne(id)
+            ?.let { articleToModify ->
+                val index = articles.indexOf(articleToModify)
+                articles[index] = article
                 articles
             }
 
