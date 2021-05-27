@@ -2,12 +2,8 @@ package com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories
 
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 
-class InMemoryArticleRepository : Repository<Article> {
-    private val articles = mutableListOf(
-        Article(1, "article x", "body article x"),
-        Article(2, "article y", "body article y"),
-        Article(3,"article z", "body article z")
-    )
+class InMemoryArticleRepository(initialValue: List<Article> = emptyList()) : Repository<Article> {
+    private val articles = initialValue.toMutableList()
 
     override fun getAll(): List<Article> = articles
 
@@ -39,5 +35,11 @@ class InMemoryArticleRepository : Repository<Article> {
                 articles[index] = article
                 articles
             }
+
+    fun reset(initialValue: List<Article> = emptyList()){
+        articles.clear()
+            .apply { articles
+                .addAll(initialValue)}
+    }
 
 }

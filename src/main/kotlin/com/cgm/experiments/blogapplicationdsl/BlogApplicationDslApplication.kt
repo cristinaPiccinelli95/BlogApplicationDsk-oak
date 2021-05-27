@@ -1,6 +1,6 @@
 package com.cgm.experiments.blogapplicationdsl
 
-import org.springframework.beans.factory.config.BeanDefinition
+import com.cgm.experiments.blogapplicationdsl.utilities.ServerPort
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.support.BeanDefinitionDsl
@@ -9,11 +9,12 @@ import org.springframework.context.support.BeanDefinitionDsl
 class BlogApplicationDslApplication
 
 fun main(args: Array<String>) {
-    start(args)
+    start(ServerPort(8080), args)
 }
 
-fun start(args: Array<String> = emptyArray(), initializer: (() -> BeanDefinitionDsl)? = null) =
+fun start(port: ServerPort, args: Array<String> = emptyArray(), initializer: (() -> BeanDefinitionDsl)? = null) =
     runApplication<BlogApplicationDslApplication>(*args){
+        setDefaultProperties(mapOf("server.port" to port.getPort()))
         addInitializers(initializer
             ?.run { initializer() }
             ?: initializeContext())

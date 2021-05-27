@@ -12,7 +12,7 @@ fun initializeContext() = beans {
     articleRoutes()
 }
 
-private fun BeanDefinitionDsl.articleRoutes() {
+fun BeanDefinitionDsl.articleRoutes() {
     bean {
         router {
             "api".nest {
@@ -32,6 +32,6 @@ private fun BeanDefinitionDsl.articleRoutes() {
     }
 }
 
-private fun BeanDefinitionDsl.useInMemoryRepository() {
+fun BeanDefinitionDsl.useInMemoryRepository() {
     bean { InMemoryArticleRepository() }
 }

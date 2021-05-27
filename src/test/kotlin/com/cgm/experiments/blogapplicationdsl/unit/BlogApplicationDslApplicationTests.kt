@@ -1,11 +1,16 @@
-package com.cgm.experiments.blogapplicationdsl
+package com.cgm.experiments.blogapplicationdsl.unit
 
+import com.cgm.experiments.blogapplicationdsl.articleRoutes
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
+import com.cgm.experiments.blogapplicationdsl.utilities.ServerPort
+import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.InMemoryArticleRepository
+import com.cgm.experiments.blogapplicationdsl.start
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.*
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.support.beans
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.*
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
@@ -18,14 +23,22 @@ class BlogApplicationDslApplicationTests {
     private lateinit var client: MockMvc
     private val mapper = jacksonObjectMapper()
 
+    private val inMemoryArticleRepository = InMemoryArticleRepository()
+
     private val expected = listOf(
         Article(1,"article x", "body article x"),
         Article(2,"article y", "body article y"),
         Article(3,"article z", "body article z"))
 
+
     @BeforeAll
     internal fun setUp() {
-        app = start()
+        app = start(ServerPort()) {
+            beans {
+                bean { inMemoryArticleRepository }
+                articleRoutes()
+            }
+        }
         client = MockMvcBuilders
             .webAppContextSetup(app as WebApplicationContext)
             .build()
@@ -38,14 +51,7 @@ class BlogApplicationDslApplicationTests {
 
     @BeforeEach
     internal fun before(){
-        client.delete("/api/articles")
-        expected.forEach {
-            client.post("/api/articles"){
-                contentType = MediaType.APPLICATION_JSON
-                accept = MediaType.APPLICATION_JSON
-                content = mapper.writeValueAsString(it)
-            }
-        }
+        inMemoryArticleRepository.reset(expected)
     }
 
     @Test
