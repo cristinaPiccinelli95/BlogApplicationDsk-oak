@@ -1,23 +1,22 @@
 package com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers
 
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
-import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.ArticleRepository
+import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.Repository
 import org.springframework.http.MediaType
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
 import java.net.URI
 
-object ArticlesHandler{
-    private val articleRepository = ArticleRepository()
+class ArticlesHandler(private val repository: Repository<Article>){
 
     fun find(request: ServerRequest): ServerResponse =
         request.inPath("id")
             ?.run(::findOne)
-            ?: okResponse(articleRepository.getAll())
+            ?: okResponse(repository.getAll())
 
     fun save(request: ServerRequest): ServerResponse =
         request.body(Article::class.java)
-            .let { article -> articleRepository.save(article)}
+            .let { article -> repository.save(article)}
             .let { article ->
                 val uri = "${request.uri()}/${article.id}"
                 ServerResponse.created(URI(uri)).body(article)}
@@ -25,7 +24,7 @@ object ArticlesHandler{
     fun delete(request: ServerRequest): ServerResponse =
         request.inPath("id")
             ?.run(::findOneToDelete)
-            ?: okResponse(articleRepository.deleteAll())
+            ?: okResponse(repository.deleteAll())
 
     fun modify(request: ServerRequest): ServerResponse  =
         findOneToModify(request.pathVariable("id"), request.body(Article::class.java))
@@ -49,17 +48,17 @@ object ArticlesHandler{
     private fun validateIntId(id: String) = id.toIntOrNull()
 
     private fun getOneOrNotFound(intId: Int) =
-        articleRepository.getOne(intId)
+        repository.getOne(intId)
             ?.run(::okResponse)
             ?: ServerResponse.notFound().build()
 
     private fun deleteOneOrNotFound(intId: Int) =
-        articleRepository.deleteOne(intId)
+        repository.deleteOne(intId)
             ?.run(::okResponse)
             ?: ServerResponse.notFound().build()
 
     private fun modifyOneOrNotFound(intId: Int, article: Article) =
-        articleRepository.modify(intId, article)
+        repository.modify(intId, article)
             ?.run(::okResponse)
             ?: ServerResponse.notFound().build()
 
