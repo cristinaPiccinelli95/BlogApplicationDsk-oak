@@ -15,9 +15,13 @@ import org.springframework.web.servlet.function.router
 import javax.sql.DataSource
 
 fun initializeContext() = beans {
+//    useRepository()
     articleRoutes()
     connectToH2FromEnv()
-    enableLiquibase()
+
+    env["blogapplicationdsl.liquibase.change-log"]
+        ?.run(::enableLiquibase)
+        ?: println("Property spring.liquibase.change-log is mandatory") //andrebbe gestito con log errori
 }
 
 fun BeanDefinitionDsl.articleRoutes() {
@@ -77,10 +81,10 @@ fun BeanDefinitionDsl.connectToPostgreFromEnv() {
     )
 }
 
-fun BeanDefinitionDsl.enableLiquibase() {
+fun BeanDefinitionDsl.enableLiquibase(changeLogFile: String) {
     bean {
         SpringLiquibase().apply {
-            changeLog = env["spring.liquibase.change-log"]
+            changeLog = changeLogFile
             dataSource = ref()
         }
     }

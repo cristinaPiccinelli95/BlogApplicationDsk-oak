@@ -22,6 +22,8 @@ class ExposedArticlesRepositoryTest {
 
     private val exposedArticlesRepository = ExposedArticlesRepository()
 
+    private val changeLogFile = "classpath:/liquibase/db-changelog-master.xml"
+
 
     @BeforeAll
     internal fun setUp() {
@@ -29,10 +31,10 @@ class ExposedArticlesRepositoryTest {
             beans {
                 articleRoutes()
                 connectToPostgreFromEnv()
-                enableLiquibase()
+                enableLiquibase(changeLogFile)
             }
         }
-//        transaction { SchemaUtils.create(ArticleEntity) }
+//        transaction { SchemaUtils.create(ArticleEntity) } se non uso liquibase
     }
 
     @AfterAll
