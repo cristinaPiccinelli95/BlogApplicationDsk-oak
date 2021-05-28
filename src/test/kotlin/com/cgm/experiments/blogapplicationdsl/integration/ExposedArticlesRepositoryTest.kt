@@ -68,9 +68,40 @@ class ExposedArticlesRepositoryTest {
     }
 
     @Test
-    fun `test getAll from repo`() {
+    fun `test getAll from repo`() =
         withExpected { expectedArticles ->
             exposedArticlesRepository.getAll() shouldBe expectedArticles
         }
-    }
+
+
+    @Test
+    fun `test getOne from repo`() =
+        withExpected { expectedArticles ->
+            val expected = expectedArticles.first()
+            exposedArticlesRepository.getOne(expected.id) shouldBe expected
+        }
+
+    @Test
+    fun `test save new in repo`() =
+        withExpected { expectedArticles ->
+            val newArticle = Article(0, "article a", "body of a")
+            val newId = expectedArticles.maxByOrNull { it.id }?.let { it.id + 1 } ?: 1
+            val expected = newArticle.copy(id = newId)
+            exposedArticlesRepository.save(newArticle) shouldBe expected
+        }
+
+    @Test
+    fun `test delete all`() =
+        withExpected {
+            exposedArticlesRepository.deleteAll() shouldBe emptyList()
+        }
+
+    @Test
+    fun `test delete one`() =
+        withExpected { expectedArticles ->
+            val expected = listOf(expectedArticles[0], expectedArticles[2] )
+            val articleToDelete = expectedArticles[1]
+            exposedArticlesRepository.deleteOne(articleToDelete.id) shouldBe expected
+        }
+
 }
