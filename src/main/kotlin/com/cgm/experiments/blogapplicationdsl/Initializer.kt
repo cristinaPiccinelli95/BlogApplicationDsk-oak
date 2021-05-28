@@ -12,10 +12,10 @@ import org.springframework.context.support.beans
 import org.springframework.core.env.get
 import org.springframework.http.MediaType
 import org.springframework.web.servlet.function.router
+import org.testcontainers.containers.PostgreSQLContainer
 import javax.sql.DataSource
 
 fun initializeContext() = beans {
-//    useRepository()
     articleRoutes()
     connectToH2FromEnv()
 
