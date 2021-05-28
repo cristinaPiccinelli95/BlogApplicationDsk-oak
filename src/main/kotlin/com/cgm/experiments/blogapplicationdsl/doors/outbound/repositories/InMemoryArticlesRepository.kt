@@ -2,7 +2,7 @@ package com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories
 
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 
-class InMemoryArticleRepository(initialValue: List<Article> = emptyList()) : Repository<Article> {
+class InMemoryArticlesRepository(initialValue: List<Article> = emptyList()) : Repository<Article> {
     private val articles = initialValue.toMutableList()
 
     override fun getAll(): List<Article> = articles

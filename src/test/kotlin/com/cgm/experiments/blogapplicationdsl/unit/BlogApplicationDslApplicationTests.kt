@@ -3,7 +3,8 @@ package com.cgm.experiments.blogapplicationdsl.unit
 import com.cgm.experiments.blogapplicationdsl.articleRoutes
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 import com.cgm.experiments.blogapplicationdsl.utilities.ServerPort
-import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.InMemoryArticleRepository
+import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.InMemoryArticlesRepository
+import com.cgm.experiments.blogapplicationdsl.helpers.HelperTests
 import com.cgm.experiments.blogapplicationdsl.start
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -23,12 +24,9 @@ class BlogApplicationDslApplicationTests {
     private lateinit var client: MockMvc
     private val mapper = jacksonObjectMapper()
 
-    private val inMemoryArticleRepository = InMemoryArticleRepository()
+    private val inMemoryArticleRepository = InMemoryArticlesRepository()
 
-    private val expected = listOf(
-        Article(1,"article x", "body article x"),
-        Article(2,"article y", "body article y"),
-        Article(3,"article z", "body article z"))
+    private val initialArticles = HelperTests.articles
 
 
     @BeforeAll
@@ -51,7 +49,7 @@ class BlogApplicationDslApplicationTests {
 
     @BeforeEach
     internal fun before(){
-        inMemoryArticleRepository.reset(expected)
+        inMemoryArticleRepository.reset(initialArticles)
     }
 
     @Test
@@ -60,14 +58,14 @@ class BlogApplicationDslApplicationTests {
             .andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
-                content { json(mapper.writeValueAsString(expected)) }
+                content { json(mapper.writeValueAsString(initialArticles)) }
             }
     }
 
     @Test
     fun `can read one article`() {
         val id = 2
-        val expectedArticle = expected.first { it.id == id }
+        val expectedArticle = initialArticles.first { it.id == id }
 
         client.get("/api/articles/$id")
             .andExpect {
@@ -137,7 +135,7 @@ class BlogApplicationDslApplicationTests {
     @Test
     fun `can delete one article`() {
         val id = 2
-        val expectedArticle = expected.map { it.copy() }.toMutableList()
+        val expectedArticle = initialArticles.map { it.copy() }.toMutableList()
         expectedArticle.removeIf { it.id == id }
 
         client.delete("/api/articles/$id")
@@ -167,8 +165,8 @@ class BlogApplicationDslApplicationTests {
     @Test
     fun `can modify one article`() {
         val id = 3
-        val expectedArticle = expected.map { it.copy() }.toMutableList()
-        val modifiedArticle = expected.find { it.id == id }?.copy(body = "modify body z")!!
+        val expectedArticle = initialArticles.map { it.copy() }.toMutableList()
+        val modifiedArticle = initialArticles.find { it.id == id }?.copy(body = "modify body z")!!
         expectedArticle[2] = modifiedArticle
 
         client.put("/api/articles/$id"){
