@@ -2,6 +2,7 @@ package com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers
 
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.Repository
+import com.cgm.experiments.blogapplicationdsl.logger
 import org.springframework.http.MediaType
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
@@ -12,7 +13,11 @@ class ArticlesHandler(private val repository: Repository<Article>){
     fun find(request: ServerRequest): ServerResponse =
         request.inPath("id")
             ?.run(::findOne)
-            ?: okResponse(repository.getAll())
+            ?: okResponse(
+                repository
+                    .getAll()
+                    .apply { logger.info("Get all articles") }
+            )
 
     fun save(request: ServerRequest): ServerResponse =
         request.body(Article::class.java)

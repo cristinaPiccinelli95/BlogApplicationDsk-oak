@@ -6,14 +6,17 @@ import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.expose
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import liquibase.integration.spring.SpringLiquibase
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import org.jetbrains.exposed.sql.Database
 import org.springframework.context.support.BeanDefinitionDsl
 import org.springframework.context.support.beans
 import org.springframework.core.env.get
 import org.springframework.http.MediaType
 import org.springframework.web.servlet.function.router
-import org.testcontainers.containers.PostgreSQLContainer
 import javax.sql.DataSource
+
+val logger: Logger = LogManager.getLogger()
 
 fun initializeContext() = beans {
     articleRoutes()
@@ -21,7 +24,7 @@ fun initializeContext() = beans {
 
     env["blogapplicationdsl.liquibase.change-log"]
         ?.run(::enableLiquibase)
-        ?: println("Property spring.liquibase.change-log is mandatory") //andrebbe gestito con log errori
+        ?: logger.error("Property spring.liquibase.change-log is mandatory") //andrebbe gestito con log errori
 }
 
 fun BeanDefinitionDsl.articleRoutes() {
@@ -70,6 +73,8 @@ fun BeanDefinitionDsl.connectToH2FromEnv() {
         env["blogapplicationdsl.username.h2"],
         env["blogapplicationdsl.password.h2"]
     )
+
+    logger.info("Connected to H2")
 }
 
 fun BeanDefinitionDsl.connectToPostgreFromEnv() {

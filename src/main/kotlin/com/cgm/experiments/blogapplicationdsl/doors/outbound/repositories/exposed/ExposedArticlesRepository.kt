@@ -6,7 +6,6 @@ import com.cgm.experiments.blogapplicationdsl.doors.outbound.entities.ArticleEnt
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.Repository
 import com.cgm.experiments.blogapplicationdsl.utilities.toArticle
 import org.jetbrains.exposed.sql.deleteAll
-import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class ExposedArticlesRepository: Repository<Article> {

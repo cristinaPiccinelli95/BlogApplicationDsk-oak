@@ -56,7 +56,7 @@ class ExposedArticlesRepositoryTest {
         exposedArticlesRepository.reset()
     }
 
-    private fun withExpected(test: (articles: List<Article>) -> Unit): Unit{
+    private fun withExpected(test: (articles: List<Article>) -> Unit){
         transaction {
             initialArticles.map { ArticleDao.new {
                 title = it.title
@@ -96,12 +96,12 @@ class ExposedArticlesRepositoryTest {
             exposedArticlesRepository.deleteAll() shouldBe emptyList()
         }
 
-    @Test
-    fun `test delete one`() =
-        withExpected { expectedArticles ->
-            val expected = listOf(expectedArticles[0], expectedArticles[2] )
-            val articleToDelete = expectedArticles[1]
-            exposedArticlesRepository.deleteOne(articleToDelete.id) shouldBe expected
-        }
+//    @Test
+//    fun `test delete one`() =
+//        withExpected { expectedArticles ->
+//            val expected = listOf(expectedArticles[0], expectedArticles[2] )
+//            val articleToDelete = expectedArticles[1]
+//            exposedArticlesRepository.deleteOne(articleToDelete.id) shouldBe expected
+//        }
 
 }
