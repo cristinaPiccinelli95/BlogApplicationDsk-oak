@@ -13,6 +13,25 @@
 
     <changeSet id="create_article_table" author="cristina.piccinelli">
         <createTable
+                tableName="comments"
+                schemaName="blog"
+        >
+            <column name="id" type="int" autoIncrement="true">
+                <constraints
+                        primaryKey="true"
+                        nullable="false"
+                        uniqueConstraintName="PK_comments_table"
+                />
+            </column>
+            <column name="comment" type="varchar">
+                <constraints nullable="false" />
+            </column>
+            <column name="article" type="int">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable
                 tableName="articles"
                 schemaName="blog"
         >
@@ -29,6 +48,13 @@
             <column name="body" type="varchar">
                 <constraints nullable="false" />
             </column>
+            <column name="comment_id" type="int">
+                <constraints
+                        references="Blog.comments(id)"
+                        nullable="true"
+                        foreignKeyName="FK_comment" />
+            </column>
         </createTable>
+
     </changeSet>
 </databaseChangeLog>

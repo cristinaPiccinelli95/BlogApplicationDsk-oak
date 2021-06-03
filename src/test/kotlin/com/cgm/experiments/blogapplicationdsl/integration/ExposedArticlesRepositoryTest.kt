@@ -1,12 +1,14 @@
 package com.cgm.experiments.blogapplicationdsl.integration
 
-import com.cgm.experiments.blogapplicationdsl.*
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.entities.ArticleDao
+import com.cgm.experiments.blogapplicationdsl.doors.outbound.entities.CommentDao
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.exposed.ExposedArticlesRepository
+import com.cgm.experiments.blogapplicationdsl.enableLiquibase
 import com.cgm.experiments.blogapplicationdsl.helpers.HelperTests
 import com.cgm.experiments.blogapplicationdsl.helpers.HelperTests.connectToPostgres
 import com.cgm.experiments.blogapplicationdsl.helpers.MyPostgresContainer
+import com.cgm.experiments.blogapplicationdsl.start
 import com.cgm.experiments.blogapplicationdsl.utilities.ServerPort
 import com.cgm.experiments.blogapplicationdsl.utilities.toArticle
 import io.kotest.matchers.shouldBe
@@ -24,6 +26,7 @@ class ExposedArticlesRepositoryTest {
     private lateinit var app: ConfigurableApplicationContext
 
     private val initialArticles = HelperTests.articles
+    private val initialComments = HelperTests.comments
 
     private val exposedArticlesRepository = ExposedArticlesRepository()
 
@@ -58,12 +61,21 @@ class ExposedArticlesRepositoryTest {
 
     private fun withExpected(test: (articles: List<Article>) -> Unit){
         transaction {
-            initialArticles.map { ArticleDao.new {
-                title = it.title
-                body = it.body
-            } }
+            val articles = initialArticles.map {
+                ArticleDao.new {
+                    title = it.title
+                    body = it.body
+                } }
                 .map (::toArticle)
-                .run(test)
+
+            initialComments.map { comm ->
+                CommentDao.new {
+                    comment = comm.comment
+                    article = ArticleDao.all().first{it.title == comm.article.title}
+                    }
+            }
+
+            test(articles)
         }
     }
 

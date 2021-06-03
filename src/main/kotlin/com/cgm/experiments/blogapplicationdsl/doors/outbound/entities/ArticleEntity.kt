@@ -16,4 +16,5 @@ class ArticleDao(id: EntityID<Int>): IntEntity(id){
 
     var title by ArticleEntity.title
     var body by ArticleEntity.body
+    val comments by CommentDao referrersOn CommentEntity.article
 }
