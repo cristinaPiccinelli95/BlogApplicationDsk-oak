@@ -22,17 +22,17 @@ val logger: Logger = LogManager.getLogger()
 
 fun initializeContext() = beans {
     articleRoutes()
-    connectToH2FromEnv()
+    connectToPostgreFromEnv()
 
     env["blogapplicationdsl.liquibase.change-log"]
         ?.run(::enableLiquibase)
-        ?: logger.error("Property spring.liquibase.change-log is mandatory") //andrebbe gestito con log errori
+        ?: logger.error("Property spring.liquibase.change-log is mandatory")
 }
 
 fun BeanDefinitionDsl.articleRoutes() {
     bean {
         router {
-            "api".nest {
+            "api/oak-test/v1".nest {
                 val handler = ArticlesHandler(ref())
 
                 GET("/articles", handler::find)

@@ -3,6 +3,7 @@ package com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.Repository
 import com.cgm.experiments.blogapplicationdsl.logger
+import com.cgm.experiments.blogapplicationdsl.utilities.toJsonApiTemplate
 import org.springframework.http.MediaType
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
@@ -16,6 +17,7 @@ class ArticlesHandler(private val repository: Repository<Article>){
             ?: okResponse(
                 repository
                     .getAll()
+                    .map(::toJsonApiTemplate)
                     .apply { logger.info("Get all articles") }
             )
 

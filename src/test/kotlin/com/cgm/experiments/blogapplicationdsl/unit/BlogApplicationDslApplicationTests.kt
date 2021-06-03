@@ -6,6 +6,7 @@ import com.cgm.experiments.blogapplicationdsl.utilities.ServerPort
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.InMemoryArticlesRepository
 import com.cgm.experiments.blogapplicationdsl.helpers.HelperTests
 import com.cgm.experiments.blogapplicationdsl.start
+import com.cgm.experiments.blogapplicationdsl.utilities.toJsonApiTemplate
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
@@ -55,7 +56,7 @@ class BlogApplicationDslApplicationTests {
 
     @Test
     fun `can read all articles`() {
-        client.get("/api/articles")
+        client.get("/api/oak-test/v1/articles")
             .andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
@@ -68,7 +69,7 @@ class BlogApplicationDslApplicationTests {
         val id = 2
         val expectedArticle = initialArticles.first { it.id == id }
 
-        client.get("/api/articles/$id")
+        client.get("/api/oak-test/v1/articles/$id")
             .andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
@@ -78,7 +79,7 @@ class BlogApplicationDslApplicationTests {
 
     @Test
     fun `if the article do not exist return not found`() {
-        client.get("/api/articles/9999999")
+        client.get("/api/oak-test/v1/articles/9999999")
             .andExpect {
                 status { isNotFound() }
             }
@@ -86,7 +87,7 @@ class BlogApplicationDslApplicationTests {
 
     @Test
     fun `if the article id is not a number it returns bad request`() {
-        client.get("/api/articles/badRequestId")
+        client.get("/api/oak-test/v1/articles/badRequestId")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -96,7 +97,7 @@ class BlogApplicationDslApplicationTests {
     fun `can create a new article`() {
         val newArticle = Article(0, "article a", "body of article a")
 
-        client.post("/api/articles"){
+        client.post("/api/oak-test/v1/articles"){
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(newArticle)
@@ -109,7 +110,7 @@ class BlogApplicationDslApplicationTests {
 
                 val location = result.response.getHeaderValue("location") as String
 
-                location shouldBe "http://localhost/api/articles/${actualArticle.id}"
+                location shouldBe "http://localhost/api/oak-test/v1/articles/${actualArticle.id}"
 
                 client.get(location)
                     .andExpect {
@@ -125,7 +126,7 @@ class BlogApplicationDslApplicationTests {
     fun `can delete all article`() {
         val expectedArticle = listOf<Article>()
 
-        client.delete("/api/articles")
+        client.delete("/api/oak-test/v1/articles")
             .andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
@@ -139,7 +140,7 @@ class BlogApplicationDslApplicationTests {
         val expectedArticle = initialArticles.map { it.copy() }.toMutableList()
         expectedArticle.removeIf { it.id == id }
 
-        client.delete("/api/articles/$id")
+        client.delete("/api/oak-test/v1/articles/$id")
             .andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
@@ -149,7 +150,7 @@ class BlogApplicationDslApplicationTests {
 
     @Test
     fun `if the article to delete do not exist return not found`() {
-        client.delete("/api/articles/9999999")
+        client.delete("/api/oak-test/v1/articles/9999999")
             .andExpect {
                 status { isNotFound() }
             }
@@ -157,7 +158,7 @@ class BlogApplicationDslApplicationTests {
 
     @Test
     fun `if the article id to delete is not a number it returns bad request`() {
-        client.delete("/api/articles/badRequestId")
+        client.delete("/api/oak-test/v1/articles/badRequestId")
             .andExpect {
                 status { isBadRequest() }
             }
@@ -170,7 +171,7 @@ class BlogApplicationDslApplicationTests {
         val modifiedArticle = initialArticles.find { it.id == id }?.copy(body = "modify body z")!!
         expectedArticle[2] = modifiedArticle
 
-        client.put("/api/articles/$id"){
+        client.put("/api/oak-test/v1/articles/$id"){
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = mapper.writeValueAsString(modifiedArticle)
@@ -187,7 +188,7 @@ class BlogApplicationDslApplicationTests {
         val id = 9999999
         val modifiedArticle = Article(id, "modified title", "modified body")
 
-        client.put("/api/articles/$id")
+        client.put("/api/oak-test/v1/articles/$id")
         {
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
@@ -202,7 +203,7 @@ class BlogApplicationDslApplicationTests {
     fun `if the article id to modify is not a number it returns bad request`() {
         val modifiedArticle = Article(0, "modified title", "modified body")
 
-        client.put("/api/articles/badRequestId")
+        client.put("/api/oak-test/v1/articles/badRequestId")
         {
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
