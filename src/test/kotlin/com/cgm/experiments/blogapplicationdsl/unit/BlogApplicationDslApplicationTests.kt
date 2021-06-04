@@ -28,10 +28,11 @@ class BlogApplicationDslApplicationTests {
 
     private val initialArticles = HelperTests.articles
 
+    private val port = ServerPort()
 
     @BeforeAll
     internal fun setUp() {
-        app = start(ServerPort()) {
+        app = start(port) {
             beans {
                 bean { inMemoryArticleRepository }
                 articleRoutes()
