@@ -23,6 +23,7 @@ val logger: Logger = LogManager.getLogger()
 fun initializeContext() = beans {
     articleRoutes()
     connectToPostgreFromEnv()
+    disableSecurity()
 
     env["blogapplicationdsl.liquibase.change-log"]
         ?.run(::enableLiquibase)
@@ -104,11 +105,26 @@ fun BeanDefinitionDsl.enableSecurity () {
                 http
                     .authorizeRequests { authz ->
                         authz
-                            .antMatchers("/api/**").hasAnyAuthority("ROLE_ADMIN")
+                            .antMatchers("/api/**").hasAuthority("ROLE_ADMIN")
                             .antMatchers("/public/**").permitAll()
                             .antMatchers("/**").denyAll()
                     }
                     .httpBasic()
+            }
+        }
+    }
+}
+
+fun BeanDefinitionDsl.disableSecurity () {
+    bean {
+        object : WebSecurityConfigurerAdapter(){
+            override fun configure(http: HttpSecurity) {
+                http
+                    .authorizeRequests { authz ->
+                        authz
+                            .antMatchers("/**").permitAll()
+                    }
+                    .csrf().disable()
             }
         }
     }

@@ -6,7 +6,7 @@ import com.cgm.experiments.blogapplicationdsl.utilities.ServerPort
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.InMemoryArticlesRepository
 import com.cgm.experiments.blogapplicationdsl.helpers.HelperTests
 import com.cgm.experiments.blogapplicationdsl.start
-import com.cgm.experiments.blogapplicationdsl.utilities.toJsonApiTemplate
+import com.cgm.experiments.blogapplicationdsl.utilities.toJsonApiTemplateGetAll
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.shouldBe
@@ -60,7 +60,7 @@ class BlogApplicationDslApplicationTests {
             .andExpect {
                 status { isOk() }
                 content { contentType(MediaType.APPLICATION_JSON) }
-                content { json(mapper.writeValueAsString(initialArticles)) }
+                content { json(mapper.writeValueAsString(initialArticles.let(::toJsonApiTemplateGetAll))) }
             }
     }
 
