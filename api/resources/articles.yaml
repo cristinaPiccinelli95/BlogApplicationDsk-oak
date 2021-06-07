@@ -74,15 +74,19 @@ components:
           properties:
             type:
               type: string
+              nullable: false
             id:
               type: integer
+              nullable: false
             attributes:
               type: object
               properties:
                 title:
                   type: string
+                  nullable: false
                 body:
                   type: string
+                  nullable: false
             relationship:
               $ref: '#/components/schemas/Relationship'
 
@@ -105,6 +109,8 @@ components:
             properties:
               type:
                 type: string
+                nullable: false
               id:
                 type: integer
+                nullable: false
 

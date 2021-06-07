@@ -12,9 +12,11 @@ import org.jetbrains.exposed.sql.Database
 import org.springframework.context.support.BeanDefinitionDsl
 import org.springframework.context.support.beans
 import org.springframework.core.env.get
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.function.router
 import javax.sql.DataSource
 
@@ -44,7 +46,7 @@ fun BeanDefinitionDsl.articleRoutes() {
                 }
                 DELETE("/articles", handler::delete)
                 DELETE("/articles/{id}", handler::delete)
-
+                GET("/*") { handler.throwException(HttpStatus.NOT_FOUND, "Invalid API") }
             }
         }
     }
