@@ -15,9 +15,9 @@ object HelperTests{
     )
 
     val comments = listOf(
-        Comment("good article", articles[1]),
-        Comment("very good article", articles[1]),
-        Comment("bad article", articles[2])
+        Comment(1,"good article", articles[1]),
+        Comment(2,"very good article", articles[1]),
+        Comment(3, "bad article", articles[2])
     )
 
     fun BeanDefinitionDsl.connectToPostgres(postgreSQLContainer: PostgreSQLContainer<Nothing>) {

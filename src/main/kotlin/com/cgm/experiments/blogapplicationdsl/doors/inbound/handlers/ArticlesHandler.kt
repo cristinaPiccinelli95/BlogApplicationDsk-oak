@@ -3,11 +3,9 @@ package com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers
 import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.Repository
 import com.cgm.experiments.blogapplicationdsl.logger
-import com.cgm.experiments.blogapplicationdsl.utilities.toJsonApiTemplateGetAll
-import com.cgm.experiments.blogapplicationdsl.utilities.toJsonApiTemplateGetOne
+import com.cgm.experiments.blogapplicationdsl.utilities.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
 import java.net.URI
@@ -35,7 +33,7 @@ class ArticlesHandler(private val repository: Repository<Article>){
         findOneToModify(request.pathVariable("id"), request.body(Article::class.java))
 
     private fun getAll() = repository.getAll()
-        .let(::toJsonApiTemplateGetAll)
+        .let(::toJsonApiArticlesTemplate)
         .run(::okResponse)
         .apply { logger.info("Get all articles") }
 
@@ -43,23 +41,21 @@ class ArticlesHandler(private val repository: Repository<Article>){
     private fun findOne(id: String) =
         validateIntId(id)
             ?.let { intId -> getOneOrNotFound(intId) }
-            ?: throwException(HttpStatus.BAD_REQUEST, "Article id not valid")
+            ?: throwException(HttpStatus.BAD_REQUEST, "Article id: $id not valid")
 
     private fun findOneToDelete(id: String) =
         validateIntId(id)
             ?.let { intId -> deleteOneOrNotFound(intId) }
-            ?: throwException(HttpStatus.BAD_REQUEST, "Article not deleted because the id not valid")
+            ?: throwException(HttpStatus.BAD_REQUEST, "Article not deleted because the id: $id is not valid")
 
     private fun findOneToModify(id: String, article: Article) =
         validateIntId(id)
             ?.let { intId -> modifyOneOrNotFound(intId, article)}
-            ?: throwException(HttpStatus.BAD_REQUEST, "Article not modified because the id not valid")
-
-    private fun validateIntId(id: String) = id.toIntOrNull()
+            ?: throwException(HttpStatus.BAD_REQUEST, "Article not modified because the id: $id is not valid")
 
     private fun getOneOrNotFound(intId: Int) =
         repository.getOne(intId)
-            ?.let(::toJsonApiTemplateGetOne)
+            ?.let(::toJsonApiArticleTemplate)
             ?.run(::okResponse)
             ?.apply { logger.info("Get article id: $intId") }
             ?: throwException(HttpStatus.NOT_FOUND, "Article id: $intId not found")
@@ -73,21 +69,5 @@ class ArticlesHandler(private val repository: Repository<Article>){
         repository.modify(intId, article)
             ?.run(::okResponse)
             ?: throwException(HttpStatus.NOT_FOUND, "Article id: $intId not modified because not found")
-
-    private fun okResponse(any: Any): ServerResponse =
-        ServerResponse.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(any)
-
-    fun throwException(status: HttpStatus, message: String): Nothing =
-        throw ResponseStatusException(status, message)
-            .apply { logger.info(message) }
-
-    private fun ServerRequest.inPath(name: String): String? =
-        try {
-            pathVariable(name)
-        }catch (ex: IllegalArgumentException){
-            null
-        }
 
 }

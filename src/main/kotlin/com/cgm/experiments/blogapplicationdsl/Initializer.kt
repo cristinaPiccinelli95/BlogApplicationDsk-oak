@@ -1,8 +1,11 @@
 package com.cgm.experiments.blogapplicationdsl
 
 import com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers.ArticlesHandler
+import com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers.CommentsHandler
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.InMemoryArticlesRepository
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.exposed.ExposedArticlesRepository
+import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.exposed.ExposedCommentsRepository
+import com.cgm.experiments.blogapplicationdsl.utilities.throwException
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import liquibase.integration.spring.SpringLiquibase
@@ -16,7 +19,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
-import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.function.router
 import javax.sql.DataSource
 
@@ -36,17 +38,25 @@ fun BeanDefinitionDsl.articleRoutes() {
     bean {
         router {
             "api/oak-test/v1".nest {
-                val handler = ArticlesHandler(ref())
+                val articlesHandler = ArticlesHandler(ExposedArticlesRepository())
+                val commentsHandler = CommentsHandler(ExposedCommentsRepository())
 
-                GET("/articles", handler::find)
-                GET("/articles/{id}", handler::find)
+                GET("/articles", articlesHandler::find)
+                GET("/articles/{id}", articlesHandler::find)
+
+                GET("/comments", commentsHandler::find)
+                GET("/comments/{id}", commentsHandler::find)
+
                 accept(MediaType.APPLICATION_JSON).nest {
-                    POST("/articles", handler::save)
-                    PUT("/articles/{id}", handler::modify)
+                    POST("/articles", articlesHandler::save)
+                    PUT("/articles/{id}", articlesHandler::modify)
+
+                    POST("/comments", commentsHandler::save)
                 }
-                DELETE("/articles", handler::delete)
-                DELETE("/articles/{id}", handler::delete)
-                GET("/*") { handler.throwException(HttpStatus.NOT_FOUND, "Invalid API") }
+                DELETE("/articles", articlesHandler::delete)
+                DELETE("/articles/{id}", articlesHandler::delete)
+                
+                GET("/*") { throwException(HttpStatus.NOT_FOUND, "Invalid API") }
             }
         }
     }
@@ -67,7 +77,7 @@ fun BeanDefinitionDsl.connectToDb(connectionString: String, driver: String, user
     val datasource = HikariDataSource(config)
     Database.connect(datasource)
 
-    bean { ExposedArticlesRepository() }
+//    bean { ExposedArticlesRepository() }
     bean<DataSource> { datasource }
 }
 
