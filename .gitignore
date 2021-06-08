@@ -31,4 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Log4j ###
+logs/
 /*.log
+/*.log.gz
