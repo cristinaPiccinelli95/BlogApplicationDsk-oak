@@ -17,7 +17,7 @@ fun ServerRequest.inPath(name: String): String? =
 fun validateIntId(id: String) = id.toIntOrNull()
 fun throwException(status: HttpStatus, message: String): Nothing =
     throw ResponseStatusException(status, message)
-        .apply { logger.info(message) }
+        .apply { logger.error(message, this) }
 
 fun okResponse(any: Any): ServerResponse =
     ServerResponse.ok()

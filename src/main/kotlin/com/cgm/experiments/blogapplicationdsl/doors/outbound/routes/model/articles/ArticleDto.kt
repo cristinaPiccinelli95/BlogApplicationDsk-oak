@@ -22,9 +22,9 @@ import javax.validation.Valid
  */
 data class ArticleDto(
 
-    @field:JsonProperty("type") val type: kotlin.String? = null,
+    @field:JsonProperty("type", required = true) val type: kotlin.String,
 
-    @field:JsonProperty("id") val id: kotlin.Int? = null,
+    @field:JsonProperty("id", required = true) val id: kotlin.Int,
 
     @field:Valid
     @field:JsonProperty("attributes") val attributes: ArticleDtoAttributes? = null,

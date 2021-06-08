@@ -74,21 +74,23 @@ components:
           properties:
             type:
               type: string
-              nullable: false
             id:
               type: integer
-              nullable: false
             attributes:
               type: object
               properties:
                 title:
                   type: string
-                  nullable: false
                 body:
                   type: string
-                  nullable: false
+              required:
+                - title
+                - body
             relationship:
               $ref: '#/components/schemas/Relationship'
+          required:
+            - type
+            - id
 
         Relationship:
           type: object
@@ -105,12 +107,13 @@ components:
             $ref: '#/components/schemas/CommentDto'
 
         CommentDto:
-            type: object
-            properties:
-              type:
-                type: string
-                nullable: false
-              id:
-                type: integer
-                nullable: false
+          type: object
+          properties:
+            type:
+              type: string
+            id:
+              type: integer
+          required:
+          - type
+          - id
 

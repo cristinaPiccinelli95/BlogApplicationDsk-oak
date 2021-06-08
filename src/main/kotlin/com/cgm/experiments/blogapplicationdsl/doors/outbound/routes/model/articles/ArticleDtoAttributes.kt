@@ -18,9 +18,9 @@ import javax.validation.Valid
  */
 data class ArticleDtoAttributes(
 
-    @field:JsonProperty("title") val title: kotlin.String? = null,
+    @field:JsonProperty("title", required = true) val title: kotlin.String,
 
-    @field:JsonProperty("body") val body: kotlin.String? = null
+    @field:JsonProperty("body", required = true) val body: kotlin.String
 ) {
 
 }
