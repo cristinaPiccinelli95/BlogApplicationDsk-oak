@@ -1,7 +1,10 @@
 package com.cgm.experiments.blogapplicationdsl.integration
 
+import com.cgm.experiments.blogapplicationdsl.domain.model.MyUser
 import com.cgm.experiments.blogapplicationdsl.enableSecurity
+import com.cgm.experiments.blogapplicationdsl.inMemoryUser
 import com.cgm.experiments.blogapplicationdsl.start
+import com.cgm.experiments.blogapplicationdsl.toBase64
 import com.cgm.experiments.blogapplicationdsl.utilities.ServerPort
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeAll
@@ -11,15 +14,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.client.exchange
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.ConfigurableApplicationContext
-import org.springframework.context.support.BeanDefinitionDsl
 import org.springframework.context.support.beans
 import org.springframework.http.HttpStatus
 import org.springframework.http.RequestEntity
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.web.servlet.function.ServerResponse
 import org.springframework.web.servlet.function.router
-import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SecurityTest {
@@ -39,7 +38,7 @@ class SecurityTest {
                     }
                 }
                 enableSecurity()
-                inMemoryAdmin("admin", "password")
+                inMemoryUser(MyUser("admin", "password", "ADMIN"))
             }
         }
 
@@ -71,19 +70,6 @@ class SecurityTest {
             .run { client.exchange<String>(this) }
 
         response.statusCode shouldBe HttpStatus.OK
-    }
-
-    private fun String.toBase64(): String = Base64.getEncoder().encodeToString(toByteArray())
-
-    private fun BeanDefinitionDsl.inMemoryAdmin(user: String, password: String) {
-        bean {
-            User
-                .withUsername(user)
-                .password("{noop}$password")
-                .roles("ADMIN")
-                .build()
-                .run { InMemoryUserDetailsManager(this) }
-        }
     }
 }
 

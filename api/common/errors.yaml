@@ -1,0 +1,28 @@
+openapi: 3.0.0
+info:
+    title: ArticlesAPI
+    version: "1"
+
+components:
+    schemas:
+
+        Error:
+          description: errors list
+          type: object
+          properties:
+              errors:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      message:
+                        type: string
+                      code:
+                        type: string
+                    required:
+                    - status
+                    - message
+                    - code
+

@@ -43,8 +43,16 @@ paths:
                 $ref: '#/components/schemas/ArticlesGetOne'
         '404':
           description: "Article not found"
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '../common/errors.yaml#/components/schemas/Error'
         '400':
           description: "Invalid ID"
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 
 
@@ -116,4 +124,24 @@ components:
           required:
           - type
           - id
+
+        Error:
+          description: errors list
+          type: object
+          properties:
+              errors:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      message:
+                        type: string
+                      code:
+                        type: string
+                    required:
+                    - status
+                    - message
+                    - code
 

@@ -1,5 +1,7 @@
 package com.cgm.experiments.blogapplicationdsl
 
+import com.cgm.experiments.blogapplicationdsl.domain.model.MyUser
+import com.cgm.experiments.blogapplicationdsl.doors.inbound.controlleradvice.enableErrorHandling
 import com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers.ArticlesHandler
 import com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers.CommentsHandler
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.InMemoryArticlesRepository
@@ -17,25 +19,25 @@ import org.springframework.core.env.get
 import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.web.servlet.function.router
+import java.util.*
 import javax.sql.DataSource
 
 val logger: Logger = LogManager.getLogger()
 
 fun initializeContext() = beans {
-//    injectControlAdvice()
     articleRoutes()
     connectToPostgreFromEnv()
-    disableSecurity()
+    enableSecurity()
+    inMemoryUser(MyUser("admin", "password", "ADMIN"))
+    enableErrorHandling()
 
     env["blogapplicationdsl.liquibase.change-log"]
         ?.run(::enableLiquibase)
         ?: logger.error("Property spring.liquibase.change-log is mandatory")
 }
-
-//fun BeanDefinitionDsl.injectControlAdvice() {
-//    bean { RestResponseEntityExceptionHandler() }
-//}
 
 fun BeanDefinitionDsl.articleRoutes() {
     bean {
@@ -139,5 +141,20 @@ fun BeanDefinitionDsl.disableSecurity () {
                     .csrf().disable()
             }
         }
+    }
+}
+
+fun String.toBase64(): String = Base64.getEncoder().encodeToString(toByteArray())
+
+fun BeanDefinitionDsl.inMemoryUser(vararg users: MyUser) {
+    bean {
+        users.map {
+            User
+                .withUsername(it.username)
+                .password("{noop}${it.password}")
+                .roles(it.role)
+                .build()
+        }
+        .run { InMemoryUserDetailsManager(this) }
     }
 }
