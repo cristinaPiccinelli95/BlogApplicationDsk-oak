@@ -4,10 +4,9 @@ import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.Repository
 import com.cgm.experiments.blogapplicationdsl.logger
 import com.cgm.experiments.blogapplicationdsl.utilities.*
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
+import java.lang.Exception
 import java.net.URI
 
 class ArticlesHandler(private val repository: Repository<Article>){
@@ -41,33 +40,33 @@ class ArticlesHandler(private val repository: Repository<Article>){
     private fun findOne(id: String) =
         validateIntId(id)
             ?.let { intId -> getOneOrNotFound(intId) }
-            ?: throwException(HttpStatus.BAD_REQUEST, "Article id: $id not valid")
+            ?: throwAndLogBadRequestException("Article id: $id not valid", "err_brGetArt")
 
     private fun findOneToDelete(id: String) =
         validateIntId(id)
             ?.let { intId -> deleteOneOrNotFound(intId) }
-            ?: throwException(HttpStatus.BAD_REQUEST, "Article not deleted because the id: $id is not valid")
+            ?: throwAndLogBadRequestException("Article not deleted because the id: $id is not valid", "err_brDelArt")
 
     private fun findOneToModify(id: String, article: Article) =
         validateIntId(id)
             ?.let { intId -> modifyOneOrNotFound(intId, article)}
-            ?: throwException(HttpStatus.BAD_REQUEST, "Article not modified because the id: $id is not valid")
+            ?: throwAndLogBadRequestException("Article not modified because the id: $id is not valid", "err_brPutArt")
 
     private fun getOneOrNotFound(intId: Int) =
         repository.getOne(intId)
             ?.let(::toJsonApiArticleTemplate)
             ?.run(::okResponse)
             ?.apply { logger.info("Get article id: $intId") }
-            ?: throwException(HttpStatus.NOT_FOUND, "Article id: $intId not found")
+            ?: throwAndLogNotFoundException("Article id: $intId not found", "err_nfGetArt")
 
     private fun deleteOneOrNotFound(intId: Int) =
         repository.deleteOne(intId)
             ?.run(::okResponse)
-            ?: throwException(HttpStatus.NOT_FOUND, "Article id: $intId not deleted because not found")
+            ?: throwAndLogNotFoundException("Article id: $intId not deleted because not found", "err_nfDelArt")
 
     private fun modifyOneOrNotFound(intId: Int, article: Article) =
         repository.modify(intId, article)
             ?.run(::okResponse)
-            ?: throwException(HttpStatus.NOT_FOUND, "Article id: $intId not modified because not found")
+            ?: throwAndLogNotFoundException("Article id: $intId not modified because not found", "err_nfPutArt")
 
 }

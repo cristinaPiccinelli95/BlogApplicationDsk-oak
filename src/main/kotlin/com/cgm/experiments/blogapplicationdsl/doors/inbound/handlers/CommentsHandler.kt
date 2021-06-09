@@ -4,7 +4,6 @@ import com.cgm.experiments.blogapplicationdsl.domain.model.Comment
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.Repository
 import com.cgm.experiments.blogapplicationdsl.logger
 import com.cgm.experiments.blogapplicationdsl.utilities.*
-import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
 import java.net.URI
@@ -28,13 +27,13 @@ class CommentsHandler(private val repository: Repository<Comment>) {
     private fun findOne(id: String) =
         validateIntId(id)
             ?.let { intId -> getOneOrNotFound(intId) }
-            ?: throwException(HttpStatus.BAD_REQUEST, "Comment id: $id not valid")
+            ?: throwAndLogBadRequestException("Comment id: $id not valid", "err_brGetComm")
 
     private fun getOneOrNotFound(intId: Int) =
         repository.getOne(intId)
             ?.run(::okResponse)
             ?.apply { logger.info("Get article id: $intId") }
-            ?: throwException(HttpStatus.NOT_FOUND, "Article id: $intId not found")
+            ?: throwAndLogNotFoundException("Article id: $intId not found", "err_nfGetComm")
 
     private fun getAll() = repository.getAll()
         .run(::okResponse)

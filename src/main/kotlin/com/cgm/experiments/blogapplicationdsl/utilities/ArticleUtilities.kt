@@ -4,8 +4,6 @@ import com.cgm.experiments.blogapplicationdsl.domain.model.Article
 import com.cgm.experiments.blogapplicationdsl.domain.model.Comment
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.entities.ArticleDao
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.entities.ArticleEntity
-import com.cgm.experiments.blogapplicationdsl.doors.outbound.entities.CommentDao
-import com.cgm.experiments.blogapplicationdsl.doors.outbound.entities.CommentEntity
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.routes.model.articles.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -17,10 +15,10 @@ fun toArticleDto(article: Article): ArticleDto =
         "articles",
         article.id,
         ArticleDtoAttributes(article.title, article.body),
-        Relationship(RelationshipComments(foundComments(article)))
+        Relationship(RelationshipComments(findComments(article)))
     )
 
-private fun foundComments(article: Article) = transaction {
+private fun findComments(article: Article) = transaction {
     ArticleDao
         .find { ArticleEntity.title eq article.title }
         .first()

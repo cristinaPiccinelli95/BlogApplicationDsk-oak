@@ -5,7 +5,6 @@ import com.cgm.experiments.blogapplicationdsl.doors.inbound.handlers.CommentsHan
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.InMemoryArticlesRepository
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.exposed.ExposedArticlesRepository
 import com.cgm.experiments.blogapplicationdsl.doors.outbound.repositories.exposed.ExposedCommentsRepository
-import com.cgm.experiments.blogapplicationdsl.utilities.throwException
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import liquibase.integration.spring.SpringLiquibase
@@ -15,7 +14,6 @@ import org.jetbrains.exposed.sql.Database
 import org.springframework.context.support.BeanDefinitionDsl
 import org.springframework.context.support.beans
 import org.springframework.core.env.get
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
@@ -25,6 +23,7 @@ import javax.sql.DataSource
 val logger: Logger = LogManager.getLogger()
 
 fun initializeContext() = beans {
+//    injectControlAdvice()
     articleRoutes()
     connectToPostgreFromEnv()
     disableSecurity()
@@ -33,6 +32,10 @@ fun initializeContext() = beans {
         ?.run(::enableLiquibase)
         ?: logger.error("Property spring.liquibase.change-log is mandatory")
 }
+
+//fun BeanDefinitionDsl.injectControlAdvice() {
+//    bean { RestResponseEntityExceptionHandler() }
+//}
 
 fun BeanDefinitionDsl.articleRoutes() {
     bean {
@@ -55,8 +58,6 @@ fun BeanDefinitionDsl.articleRoutes() {
                 }
                 DELETE("/articles", articlesHandler::delete)
                 DELETE("/articles/{id}", articlesHandler::delete)
-                
-                GET("/*") { throwException(HttpStatus.NOT_FOUND, "Invalid API") }
             }
         }
     }
@@ -77,7 +78,6 @@ fun BeanDefinitionDsl.connectToDb(connectionString: String, driver: String, user
     val datasource = HikariDataSource(config)
     Database.connect(datasource)
 
-//    bean { ExposedArticlesRepository() }
     bean<DataSource> { datasource }
 }
 
