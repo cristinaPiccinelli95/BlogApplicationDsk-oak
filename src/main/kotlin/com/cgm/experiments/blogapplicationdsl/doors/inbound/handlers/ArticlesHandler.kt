@@ -6,14 +6,14 @@ import com.cgm.experiments.blogapplicationdsl.logger
 import com.cgm.experiments.blogapplicationdsl.utilities.*
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
-import java.lang.Exception
 import java.net.URI
+import java.util.*
 
 class ArticlesHandler(private val repository: Repository<Article>){
 
     fun find(request: ServerRequest): ServerResponse =
         request.inPath("id")
-            ?.run(::findOne)
+            ?.run { findOne(this, request.param("include")) }
             ?: getAll()
 
     fun save(request: ServerRequest): ServerResponse =
@@ -37,9 +37,9 @@ class ArticlesHandler(private val repository: Repository<Article>){
         .apply { logger.info("Get all articles") }
 
 
-    private fun findOne(id: String) =
+    private fun findOne(id: String, param: Optional<String>) =
         validateIntId(id)
-            ?.let { intId -> getOneOrNotFound(intId) }
+            ?.let { intId -> getOneOrNotFound(intId, param) }
             ?: throwAndLogBadRequestException("Article id: $id not valid", "err_brGetArt")
 
     private fun findOneToDelete(id: String) =
@@ -52,9 +52,12 @@ class ArticlesHandler(private val repository: Repository<Article>){
             ?.let { intId -> modifyOneOrNotFound(intId, article)}
             ?: throwAndLogBadRequestException("Article not modified because the id: $id is not valid", "err_brPutArt")
 
-    private fun getOneOrNotFound(intId: Int) =
+    private fun getOneOrNotFound(intId: Int, param: Optional<String>) =
         repository.getOne(intId)
-            ?.let(::toJsonApiArticleTemplate)
+            ?.let {
+                if(param.equals("included")) toJsonApiWithIncludeArticleTemplate(it)
+                else toJsonApiArticleTemplate(it)
+            }
             ?.run(::okResponse)
             ?.apply { logger.info("Get article id: $intId") }
             ?: throwAndLogNotFoundException("Article id: $intId not found", "err_nfGetArt")
